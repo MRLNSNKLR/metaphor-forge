@@ -1,67 +1,50 @@
-# Metaphor Forge v1
+# Metaphor Forge v3
 
-A small Streamlit bot for generating metaphor concepts, rhyme-aware bars, punchlines,
-double meanings, extended metaphors, and "rhyme rescue" suggestions.
+Version 3 adds true cloud persistence with Supabase.
 
-## What it does
+## New in v3
 
-- Accepts a line, several bars, an idea, or a theme.
-- Optional rhyme target.
-- Exact, multisyllabic, slant, loose, or no-rhyme modes.
-- Metaphor, simile, punchline, double-meaning, extended-metaphor, and rhyme-rescue modes.
-- Tone, complexity, imagery, and creativity controls.
-- "Protect my wording" option.
-- Follow-up refinement of the last result.
+- Email/password accounts
+- Permanent cloud Library
+- Permanent cloud Rhyme Bank
+- Sync across devices
+- Row Level Security so each account can access only its own rows
+- Import a v2 JSON Library into the cloud
+- JSON and Markdown backups
 
-## Run it locally
+## Setup
 
-1. Install Python 3.10+.
-2. Open a terminal in this folder.
-3. Create and activate a virtual environment (recommended).
-4. Install dependencies:
+### 1. Create a Supabase project
+Create a Supabase project and copy its Project URL and publishable key (or legacy anon key).
+Do not use the service-role key in this app.
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+### 2. Create the database tables
+Open Supabase SQL Editor, paste the entire contents of `supabase_schema.sql`, and run it once.
 
-5. Set your API key.
+### 3. Update Streamlit Secrets
+Keep your existing OpenAI key and add:
 
-   macOS/Linux:
-   ```bash
-   export OPENAI_API_KEY="your_key_here"
-   ```
+```toml
+OPENAI_API_KEY = "your_existing_openai_key"
+SUPABASE_URL = "https://YOUR_PROJECT.supabase.co"
+SUPABASE_PUBLISHABLE_KEY = "your_supabase_publishable_key"
+```
 
-   Windows PowerShell:
-   ```powershell
-   $env:OPENAI_API_KEY="your_key_here"
-   ```
+If your project only exposes a legacy anon key, use `SUPABASE_KEY` instead.
+Never use a service-role key.
 
-   You can also start the app and paste the key into the password field in the sidebar.
+### 4. Update GitHub
+Replace `app.py` and `requirements.txt` in your existing repository. Add `supabase_schema.sql` and `.gitignore`.
+Commit the changes; Streamlit should redeploy automatically.
 
-6. Run:
+### 5. Create your Metaphor Forge account
+Open the app, choose **Create account**, and enter your email/password.
+Hosted Supabase projects commonly require email confirmation by default. If prompted, confirm the email and then sign in.
 
-   ```bash
-   streamlit run app.py
-   ```
+### 6. Import v2 work
+If you exported `metaphor_forge_library.json` from v2, open **Import/Backup**, upload it, and tap **Import into my cloud account**.
 
-7. Open the local URL Streamlit shows in your browser.
+## Security
+The app uses a publishable/anon Supabase client key with authenticated user sessions. Both tables have Row Level Security policies that require `auth.uid() = user_id`, so users can only read or change their own rows.
 
-## Model
-
-The default is `gpt-5.6-luna` because this kind of high-volume creative ideation benefits
-from a lower-cost model. Change `OPENAI_MODEL` or the Model field in the sidebar if desired.
-
-## Security note
-
-Do not hard-code or commit your API key. This project reads it from the environment,
-Streamlit secrets, or the temporary password field.
-
-## Suggested v2 features
-
-- Save favorite metaphors and bars.
-- Build a personal rhyme bank.
-- Analyze syllables and stressed-vowel patterns locally.
-- Highlight internal rhymes and multisyllabic chains.
-- Song/project folders.
-- "Don't write the bar for me" mode that gives concepts only.
-- Mobile-first deployment.
+Your OpenAI API key remains in Streamlit Secrets and is never included in exported files.
